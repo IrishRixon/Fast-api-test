@@ -1,22 +1,22 @@
-import numbers
-import numbers
-from pydantic import Field
-from pydantic import BaseModel
+from typing import List, Optional
+from pydantic import Field, BaseModel
 
 class AirBnbSchema(BaseModel): 
-     _id: str = Field(alias="_id")
-     name: str
-     summary: str
-     description: str
-     notes: str
-     home_rules: str
-     property_type: str
-     room_type: str
-     minimum_nights: str
-     maximum_nights: str
-     price: numbers
-     weekly_price: numbers
-     monthly_price: numbers
-     cleaning_fee: numbers
-     
+    id: str = Field(alias="_id")
+    name: Optional[str] = None
+    summary: Optional[str] = None
+    description: Optional[str] = None
+    notes: Optional[str] = None
+    house_rules: Optional[str] = None
+    property_type: Optional[str] = None
+    room_type: Optional[str] = None
+    minimum_nights: Optional[str] = None
+    maximum_nights: Optional[str] = None
+    price: Optional[float] = None
+    weekly_price: Optional[float] = None
+    monthly_price: Optional[float] = None
+    cleaning_fee: Optional[float] = None
 
+class PaginatedAirbnbResponse(BaseModel):
+    data: List[AirBnbSchema]
+    total_count: int
