@@ -1,3 +1,8 @@
+from app.models.schema.airbnb_schema import AirBnbSchemaCreate
+from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
+from app.models.schema.airbnb_schema import AirBnbSchema
+from fastapi import HTTPException
+from app.models.schema.airbnb_schema import AirBnbUpdate
 from bson import Decimal128
 from motor.core import AgnosticClientSession
 from typing import Optional
@@ -39,6 +44,30 @@ class AirBnbModel():
         return (result, total_count)
 
 
-
-
+    async def get_by_id(self, id: ObjectId, session: Optional[AgnosticClientSession] = None) -> Optional[Dict[str, Any]]: 
+        res = await self.collection.find_one({"_id": id}, session=session)
+        return self._convert_objectids_to_str(res) if res else None
         
+    async def update_airbnb(self, id: str, data: AirBnbUpdate , session: Optional[AgnosticClientSession] = None) -> Dict[str, Any]:
+        update_data = {k: v for k, v in data.model_dump().items() if v is not None }
+        res = await self.collection.find_one_and_update({"_id": id}, {"$set": update_data}, session=session)
+
+        if not res:
+            raise HTTPException(status_code=404, detail="Airbnb not found")
+        return self._convert_objectids_to_str(res)
+
+    async def delete_airbnb(self, id: str, session: Optional[AgnosticClientSession] = None) -> bool:
+        res = await self.collection.delete_one({"_id": id}, session=session)
+        return res.deleted_count > 0
+
+    async def create_airbnb(self, data: AirBnbSchemaCreate, session: Optional[AgnosticClientSession] = None) -> bool:
+        created_data = data.model_dump()
+        res = await self.collection.insert_one(created_data, session=session)
+        
+        if not res.acknowledged:
+            raise HTTPException(
+                status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to create"
+            )
+
+        return True
